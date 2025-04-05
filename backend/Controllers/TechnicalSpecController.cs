@@ -2,6 +2,11 @@ using backend.Contracts;
 using backend.DAL;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+//using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Net.Http.Headers;
 using System.Xml.Linq;
@@ -9,7 +14,7 @@ using System.Xml.Linq;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("v1/TechnicalSpecController")]
+    [Route("api/v1/TechnicalSpecification")]
     public class TechnicalSpecController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
@@ -19,7 +24,7 @@ namespace backend.Controllers
             _dbContext = dbContext;
         }
 
-        [HttpPost("/Upload")]
+        [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile fileStream, string userId, CancellationToken cts)
         {
             //var url = "{host}/v1/documents/tz-check";
@@ -30,7 +35,19 @@ namespace backend.Controllers
                     return BadRequest();
                 }
 
-                var path = $"./Storage/{fileStream.Name}";
+                //var path = $"./Storage/{fileStream.Name}";
+                var path = $"./Storage/{fileStream.FileName}";
+
+                //var directory = Path.GetDirectoryName(path);
+                //if (!Directory.Exists(directory))
+                //{
+                //    Directory.CreateDirectory(directory);
+                //}
+
+                //using (var stream = new FileStream(path, FileMode.Create))
+                //{
+                //    await fileStream.CopyToAsync(stream, cts);
+                //}
 
                 var technicalSpec = new TechnicalSpec(userId, fileStream.FileName, path);
 
@@ -63,9 +80,118 @@ namespace backend.Controllers
             }
         }
 
-       
+        [HttpGet]
+        public async Task<IActionResult> Get([FromQuery] GetTechnicalSpecRequest request, CancellationToken cts)
+        {
+            int page = request.Page > 0 ? request.Page : 1;
+            int size = request.Size > 0 ? request.Size : 10;
+
+            var techSpecsQuery = _dbContext.TechnicalSpecs
+                .Where(ts => string.IsNullOrWhiteSpace(request.Search) ||
+               ts.Name.ToLower().Contains(request.Search.ToLower()));
+
+            var totalCount = await techSpecsQuery.CountAsync(cts);
+
+            var techSpecsDtos = await techSpecsQuery
+                .Skip((page - 1) * size)
+                .Take(size)
+                .Select(ts => new TechnicalSpecDto(ts.Id, ts.UserId, ts.Name, ts.Link))
+                .ToListAsync(cts);
+
+            //var response = new GetTechnicalSpecResponse(techSpecsDtos)
+            //{
+            //    TotalCount = totalCount,
+            //    Page = page,
+            //    Size = size
+            //};
+            return Ok(new GetTechnicalSpecResponse(techSpecsDtos));
+        }
+
+        // GET "api/v1/technical-spec/{guid}
+        //Айди, ЮзерАйди, Имя, Текст(с бэка спарсить)
+
+        // возвращает контент тз по id 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            if (!string.IsNullOrEmpty(id) && Guid.TryParse(id, out Guid guidId))
+            {
+                TechnicalSpec? technicalSpec = await _dbContext.TechnicalSpecs.FirstOrDefaultAsync(ts => ts.Id == guidId);
+
+                var filePath = technicalSpec.Link;
+                FileContentResult fileContentResult;
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    byte[] fileContent = await System.IO.File.ReadAllBytesAsync(filePath);
+                    fileContentResult = File(fileContent, "application/octet-stream", Path.GetFileName(filePath));
+
+                    var response = new
+                    {
+                        Id = technicalSpec.Id,
+                        UserId = technicalSpec.UserId,
+                        Name = technicalSpec.Name,
+                        Content = fileContent
+                    };
+
+                    return Ok(response);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            return NotFound();
+        }
 
 
+        [HttpDelete]
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (!string.IsNullOrEmpty(id) && Guid.TryParse(id, out Guid guidId))
+            {
+                TechnicalSpec? technicalSpec = await _dbContext.TechnicalSpecs.FirstOrDefaultAsync(ts => ts.Id == guidId);
+                if (technicalSpec != null)
+                {
+                    _dbContext.TechnicalSpecs.Remove(technicalSpec);
+                    await _dbContext.SaveChangesAsync();
+                    return Ok();
+                }
+            }
+            return NotFound();
+        }
+
+        //GET "api/v1/technilac-spec/{guid}/file
+
+        [HttpPost("{id}/file")] 
+        public async Task<IActionResult> Download(string id)
+        {
+            if (!string.IsNullOrEmpty(id) && Guid.TryParse(id, out Guid guidId))
+            {
+                TechnicalSpec? technicalSpec = await _dbContext.TechnicalSpecs.FirstOrDefaultAsync(ts => ts.Id == guidId);
+
+                if (technicalSpec != null)
+                {
+                    var filePath = technicalSpec.Link;
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        byte[] fileContent = await System.IO.File.ReadAllBytesAsync(filePath);
+                        return File(fileContent, "application/octet-stream", Path.GetFileName(filePath));
+                    }
+                    else
+                    {
+                        return NotFound("Файл не найден.");
+                    }
+                }
+                else
+                {
+                    return NotFound("Техническая спецификация не найдена.");
+                }
+            }
+            return BadRequest("Неверный идентификатор.");
+
+        }
 
     }
 }
