@@ -1,0 +1,129 @@
+{
+    "doNotSaveHistory": false,
+    "errorCode": 0,
+    "errorCodeDescription": null,
+    "request": {
+        "addSortField": null,
+        "addSortOrder": null,
+        "additionalFields": [
+            "document_name",
+            "document_normative",
+            "document_state"
+        ],
+        "andCondition": null,
+        "catalogId": null,
+        "catalogIds": null,
+        "catalogQueryId": null,
+        "conditionGroupFilters": null,
+        "contextSearch": null,
+        "customFilterGroups": null,
+        "customFilters": null,
+        "dateFrom": null,
+        "dateTo": null,
+        "debugQuery": false,
+        "dictionaryElementIDs": null,
+        "dictionaryElementTags": null,
+        "dictionaryFileName": null,
+        "dictionaryName": null,
+        "directFilters": null,
+        "facet": {
+            "field": [
+                "type"
+            ],
+            "pivot": null
+        },
+        "facetLimit": 21,
+        "filter": null,
+        "filterGroups": null,
+        "filterValue": null,
+        "groupField": null,
+        "groupLimit": 3,
+        "groups": [
+            "Текущие редакции"
+        ],
+        "historyQueryId": null,
+        "hlAdditionalFields": false,
+        "hlColors": null,
+        "hlFragSize": 0,
+        "id": null,
+        "idOnly": false,
+        "ip": "192.168.2.2",
+        "joinFrom": null,
+        "joinTo": null,
+        "linkField": null,
+        "linkOperator": null,
+        "linkValue": null,
+        "mode": "SIMPLE",
+        "multiqueryRequest": {
+            "queryRequests": [
+                {
+                    "not": false,
+                    "operator": "AND",
+                    "queryId": null,
+                    "request": "{\"query\":\"{выфвфыфвывфывыфвыфвыффыв}\",\"type\":\"EXACT\",\"mode\":\"SIMPLE\"}",
+                    "type": "Q"
+                },
+                {
+                    "not": false,
+                    "operator": "AND",
+                    "queryId": "15556f4a-7811-42a5-a976-a9eb9e90cb74",
+                    "request": null,
+                    "type": "SQ"
+                }
+            ]
+        },
+        "nestedQuery": null,
+        "nonRecursiveCatalogsWalking": false,
+        "not": false,
+        "onlyNotViewed": false,
+        "query": null,
+        "rows": 10,
+        "shards": null,
+        "simpleSearchFieldsBundle": "test1",
+        "skipFacetRequests": false,
+        "snippetForAllFields": false,
+        "sortField": "document_date_edition",
+        "sortOrder": "desc",
+        "sortVarName": null,
+        "sortVarValue": null,
+        "sourceField": null,
+        "start": 0,
+        "staticFilters": null,
+        "statistic": null,
+        "type": "MULTIQUERY",
+        "typeRequests": null,
+        "uid": "07f51374-78a0-4df6-a243-92c9e01f8c1a",
+        "useLingvo": false,
+        "woBoost": false
+    },
+    "searchResult": {
+        "QTime": 1111,
+        "commonStatFieldSum": null,
+        "debugParsedQuery": null,
+        "documents": [],
+        "facetFields": [
+            {
+                "comment": "Тип",
+                "counts": [],
+                "field": "type",
+                "name": "type"
+            }
+        ],
+        "groupCount": 0,
+        "groupField": null,
+        "groupResults": null,
+        "groupedResult": false,
+        "historyQueryId": null,
+        "messages": [],
+        "numFounds": 0,
+        "pivot": null,
+        "shards": [
+            {
+                "name": "Текущие редакции",
+                "numFound": 0
+            }
+        ],
+        "statisticInfo": null
+    },
+    "stackTrace": null
+}
