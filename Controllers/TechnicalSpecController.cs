@@ -169,15 +169,15 @@ namespace backend.Controllers
                     }
                     else
                     {
-                        return NotFound("Файл не найден.");
+                        return NotFound();
                     }
                 }
                 else
                 {
-                    return NotFound("Техническая спецификация не найдена.");
+                    return NotFound();
                 }
             }
-            return BadRequest("Неверный идентификатор.");
+            return BadRequest();
 
         }
 
