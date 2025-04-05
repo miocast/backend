@@ -1,5 +1,6 @@
 using backend.DAL;
 using backend.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -17,23 +18,21 @@ builder.Services.AddAuthentication(
     {
         options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
         options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignOutScheme = IdentityConstants.ApplicationScheme;
     })
     .AddCookie(IdentityConstants.ApplicationScheme)
     .AddBearerToken(IdentityConstants.BearerScheme);
-
-
 
 builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
 var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
-
 await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 await dbContext.Database.EnsureCreatedAsync();
 
@@ -45,16 +44,26 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGet("api/v1/users/me", async (ClaimsPrincipal claims, ApplicationDbContext context) =>
+{
+    string userId = claims.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+    return await context.Users.FindAsync(userId);
+})
+    .RequireAuthorization();
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapControllers();
-//});
-
 app.MapIdentityApi<User>();
+
+app.MapPost("api/v1/logout", async (HttpContext httpContext) =>
+{
+    await httpContext.SignOutAsync();
+    return Results.Ok();
+})
+    .RequireAuthorization(); ;
+
 app.MapControllers();
 
 app.Run();

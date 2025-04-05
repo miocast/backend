@@ -2,14 +2,7 @@ using backend.Contracts;
 using backend.DAL;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
-//using System.Data.Entity;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
 
 namespace backend.Controllers
 {
@@ -98,19 +91,9 @@ namespace backend.Controllers
                 .Select(ts => new TechnicalSpecDto(ts.Id, ts.UserId, ts.Name, ts.Link))
                 .ToListAsync(cts);
 
-            //var response = new GetTechnicalSpecResponse(techSpecsDtos)
-            //{
-            //    TotalCount = totalCount,
-            //    Page = page,
-            //    Size = size
-            //};
             return Ok(new GetTechnicalSpecResponse(techSpecsDtos));
         }
 
-        // GET "api/v1/technical-spec/{guid}
-        //Айди, ЮзерАйди, Имя, Текст(с бэка спарсить)
-
-        // возвращает контент тз по id 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -128,9 +111,9 @@ namespace backend.Controllers
 
                     var response = new
                     {
-                        Id = technicalSpec.Id,
-                        UserId = technicalSpec.UserId,
-                        Name = technicalSpec.Name,
+                        technicalSpec.Id,
+                        technicalSpec.UserId,
+                        technicalSpec.Name,
                         Content = fileContent
                     };
 
@@ -161,9 +144,7 @@ namespace backend.Controllers
             return NotFound();
         }
 
-        //GET "api/v1/technilac-spec/{guid}/file
-
-        [HttpPost("{id}/file")] 
+        [HttpPost("{id}/file")]
         public async Task<IActionResult> Download(string id)
         {
             if (!string.IsNullOrEmpty(id) && Guid.TryParse(id, out Guid guidId))
@@ -181,15 +162,15 @@ namespace backend.Controllers
                     }
                     else
                     {
-                        return NotFound("Файл не найден.");
+                        return NotFound();
                     }
                 }
                 else
                 {
-                    return NotFound("Техническая спецификация не найдена.");
+                    return NotFound();
                 }
             }
-            return BadRequest("Неверный идентификатор.");
+            return BadRequest();
 
         }
 
