@@ -45,14 +45,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGet("users/me", async (ClaimsPrincipal claims, ApplicationDbContext context) =>
+{ 
+    string userId = claims.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+    return await context.Users.FindAsync(userId);
+})
+    .RequireAuthorization();
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapControllers();
-//});
 
 app.MapIdentityApi<User>();
 app.MapControllers();

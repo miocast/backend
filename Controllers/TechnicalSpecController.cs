@@ -98,19 +98,9 @@ namespace backend.Controllers
                 .Select(ts => new TechnicalSpecDto(ts.Id, ts.UserId, ts.Name, ts.Link))
                 .ToListAsync(cts);
 
-            //var response = new GetTechnicalSpecResponse(techSpecsDtos)
-            //{
-            //    TotalCount = totalCount,
-            //    Page = page,
-            //    Size = size
-            //};
             return Ok(new GetTechnicalSpecResponse(techSpecsDtos));
         }
 
-        // GET "api/v1/technical-spec/{guid}
-        //јйди, ёзерјйди, »м€, “екст(с бэка спарсить)
-
-        // возвращает контент тз по id 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -128,9 +118,9 @@ namespace backend.Controllers
 
                     var response = new
                     {
-                        Id = technicalSpec.Id,
-                        UserId = technicalSpec.UserId,
-                        Name = technicalSpec.Name,
+                        technicalSpec.Id,
+                        technicalSpec.UserId,
+                        technicalSpec.Name,
                         Content = fileContent
                     };
 
@@ -160,8 +150,6 @@ namespace backend.Controllers
             }
             return NotFound();
         }
-
-        //GET "api/v1/technilac-spec/{guid}/file
 
         [HttpPost("{id}/file")] 
         public async Task<IActionResult> Download(string id)
