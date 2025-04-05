@@ -9,6 +9,7 @@ from odf.opendocument import load
 from fastapi import  UploadFile
 
 from app.business.document import DocumentModel
+from app.business.llm_relevants import LlmRelevants
 from app.business.npa import Npa
 from app.services.mistral_communicator import MistralCommunicator
 from app.services.llm_communicator_base import LlmCommunicatorBase
@@ -46,7 +47,8 @@ class LlmService:
         
         # Декодируем с правильной кодировкой
         # content_text = content.decode(encoding if encoding else "utf-8", errors="ignore")
-        content_text = self._read_file(content, os.path.splitext(document.filename))
+        print(os.path.splitext(document.filename))
+        content_text = self._read_file(content, os.path.splitext(document.filename)[1])
         
         relevants = self._find_relevants(content_text)
         
@@ -55,15 +57,10 @@ class LlmService:
             print('none')
             return relevants 
         
-        print(relevants.npas)
-        
         dik_pik_res = self.llm_communicator.ask(content_text, relevants)
         
-        print (dik_pik_res)
-        
-        
-        # Если не нашло совпадений. Пытаться спарсить. реализовать в конце
-        return dik_pik_res
+        # TODO: Не ретурн а отправлять на C# роут. Пока ручки нет у нас
+        return LlmRelevants(analys=dik_pik_res, npa=relevants)
     
     def _find_relevants(self, text: str, top_counter: int = 5) -> Npa | None:
         filtered = self.collection.query(query_texts=[text], n_results=top_counter, include=["documents", "metadatas", "distances"])
@@ -71,9 +68,9 @@ class LlmService:
         return Npa(npas=filtered["documents"][0], sources=[m["source"] for m in filtered["metadatas"][0]], distances=filtered["distances"][0])
     
     def _read_file(self, file_contents: bytes, file_ext: str) -> str:
-        if file_ext == "odt":
-            return self._read_docx(file_contents)
-        elif file_ext == "doc":
+        if file_ext == ".odt":
+            return self._read_odt(file_contents)
+        elif file_ext == ".doc":
             return self._read_docx(file_contents)
         
         return ""
