@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using backend.Enums;
+using Microsoft.Extensions.Primitives;
 
 namespace backend.Models
 {
@@ -21,5 +22,6 @@ namespace backend.Models
         public string Category { get; set; } = "Default";
         public TechStatus Status { get; set; } = TechStatus.InWork;
         public string Link { get; set; }
+        public string Text { get; set; }
     }
 }

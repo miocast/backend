@@ -89,9 +89,10 @@ class ActParser():
                 name = re.sub(r'[<>:"/\\|?*]', '', name)
                 type = doc["type"]
 
-                file_path = str(Path(__file__).parent.absolute().joinpath(f"{name}.docx"))
+                folder = Path(__file__).parent.absolute()
+                file_path = str(Path(__file__).parent.absolute().joinpath(f"{type}/{name}.docx"))
 
-                os.makedirs(type, exist_ok=True)
+                os.makedirs(file_path, exist_ok=True)
 
                 link = f"https://pravo-search.minjust.ru/bigs/showDocumentWithTemplate.action?id={id}&shard=Текущие%20редакции&templateName=printText.flt"
                 doc_html = requests.get(link, verify=False)

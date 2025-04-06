@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
+using System.Text;
 using backend.Contracts;
 using backend.DAL;
 using backend.Models;
@@ -41,12 +43,20 @@ namespace backend.Controllers
                     Directory.CreateDirectory(directory);
                 }
 
+                string text = string.Empty;
+
                 using (var stream = new FileStream(path, FileMode.Create))
                 {
                     await fileStream.CopyToAsync(stream, cts);
+
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        text = reader.ReadToEnd();
+                    }
                 }
 
                 var technicalSpec = new TechnicalSpec(userId, fileStream.FileName, path);
+                technicalSpec.Text = text;
 
                 await _dbContext.TechnicalSpecs.AddAsync(technicalSpec, cts);
                 await _dbContext.SaveChangesAsync(cts);
@@ -144,6 +154,8 @@ namespace backend.Controllers
           
             var npas = await _dbContext.DocumentNpas.Where(doc => doc.DocumentId == id).ToListAsync();
 
+            var doc = await _dbContext.TechnicalSpecs.FirstOrDefaultAsync(doc => doc.Id.ToString() == id);
+
             var docBusiness = new DocumentAnalysBusiness
             {
                 DocumentId = id,
@@ -158,7 +170,8 @@ namespace backend.Controllers
                 {
                     DistancePercent = np.DistancePercent,
                     Source = np.Source
-                }).ToList()
+                }).ToList(),
+                Text = doc?.Text ?? string.Empty
             };
 
             return new OkObjectResult(docBusiness);

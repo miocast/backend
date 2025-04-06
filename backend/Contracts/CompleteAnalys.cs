@@ -21,6 +21,7 @@
         public string DocumentId { get; set; }
         public List<Analys> Analyses { get; set; }
         public List<NpaBusiness> Npas { get; set; }
+        public string Text { get; set; }
     }
 
     public class NpaBusiness
