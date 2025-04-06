@@ -53,6 +53,7 @@ app.MapGet("api/v1/users/me", async (ClaimsPrincipal claims, ApplicationDbContex
 
 app.UseHttpsRedirection();
 
+
 app.UseAuthorization();
 
 app.MapGroup("api/v1/").MapIdentityApi<User>();

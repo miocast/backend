@@ -8,10 +8,11 @@ from app.services.llm_service import LlmService
 router = APIRouter(tags=['app'])
 
 @router.post('/v1/documents/tz-check')
-async def send_doc_to_llm_check(document: UploadFile, user_id: int, background_tasks: BackgroundTasks):
+async def send_doc_to_llm_check(document: UploadFile, document_id, background_tasks: BackgroundTasks):
     llmService = LlmService()
-    test = await llmService.check_tz(document, user_id)
-    return test
+    doc_bytes = await document.read()
+    background_tasks.add_task(llmService.check_tz, doc_bytes, document.filename, document_id)
+    
     return Response(status_code=200)
 
 @router.post('/v1/documets/parse-by-theme')

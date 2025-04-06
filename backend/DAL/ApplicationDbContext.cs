@@ -1,4 +1,5 @@
-﻿using backend.Models;
+﻿using backend.Contracts;
+using backend.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,9 @@ namespace backend.DAL
         }
 
         public DbSet<TechnicalSpec> TechnicalSpecs => Set<TechnicalSpec>();
+        public DbSet<NpaDocument> NpaDocuments => Set<NpaDocument>();
+        public DbSet<DocumentAnalys> DocumentAnalys => Set<DocumentAnalys>();
+        public DbSet<DocumentNpa> DocumentNpas => Set<DocumentNpa>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -22,6 +26,9 @@ namespace backend.DAL
             builder.Entity<TechnicalSpec>().Property(ts => ts.Name).IsRequired().HasMaxLength(100);
             builder.Entity<TechnicalSpec>().Property(ts => ts.Link).IsRequired().HasMaxLength(100);
             builder.Entity<TechnicalSpec>().Property(ts => ts.UserId).IsRequired().HasMaxLength(100);
+
+            builder.Entity<NpaDocument>().Property(doc => doc.Name).IsRequired().HasMaxLength(100);
+            builder.Entity<NpaDocument>().Property(doc => doc.FilePath).IsRequired().HasMaxLength(300);
 
             builder.HasDefaultSchema("hackathon");
         }
