@@ -55,7 +55,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapIdentityApi<User>();
+app.MapGroup("api/v1/").MapIdentityApi<User>();
 
 app.MapPost("api/v1/logout", async (HttpContext httpContext) =>
 {
