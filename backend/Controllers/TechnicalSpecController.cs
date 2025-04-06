@@ -2,14 +2,7 @@ using backend.Contracts;
 using backend.DAL;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
-//using System.Data.Entity;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
 
 namespace backend.Controllers
 {
@@ -65,7 +58,7 @@ namespace backend.Controllers
                         fileContent.Headers.ContentType = new MediaTypeHeaderValue(fileStream.ContentType);
                         content.Add(fileContent, "document", fileStream.FileName);
 
-                        // TODO: Из конфы брать api ссылку питона. СРАЗУ СДЕЛАТЬ КАК УВИЖУ ЧТО ЗАРАБОТАЛО
+                        // TODO: пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ api пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         HttpResponseMessage response = await client.PostAsync($"{this.ApiUrl}/api/v1/documents/tz-check?document_id={technicalSpec.Id}", content);
 
                         if (!response.IsSuccessStatusCode)
@@ -106,7 +99,8 @@ namespace backend.Controllers
         }
 
         // GET "api/v1/technical-spec/{guid}
-        // возвращает контент тз по id 
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ id 
+
         [HttpGet("{id}")]
         [ProducesResponseType(200, Type = typeof(TechnicalSpecDto))]
         public async Task<IActionResult> GetById(string id)
@@ -185,9 +179,7 @@ namespace backend.Controllers
             return NotFound();
         }
 
-        //GET "api/v1/technilac-spec/{guid}/file
-
-        [HttpPost("{id}/file")] 
+        [HttpPost("{id}/file")]
         public async Task<IActionResult> Download(string id)
         {
             if (!string.IsNullOrEmpty(id) && Guid.TryParse(id, out Guid guidId))
@@ -205,15 +197,15 @@ namespace backend.Controllers
                     }
                     else
                     {
-                        return NotFound("Файл не найден.");
+                        return NotFound();
                     }
                 }
                 else
                 {
-                    return NotFound("Техническая спецификация не найдена.");
+                    return NotFound();
                 }
             }
-            return BadRequest("Неверный идентификатор.");
+            return BadRequest();
 
         }
 
