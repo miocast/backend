@@ -1,6 +1,7 @@
 import array
 from itertools import count
 import os
+from pathlib import Path
 import re
 import requests
 import urllib3
@@ -10,6 +11,7 @@ from bs4 import BeautifulSoup
 from docx import Document
 
 from app.business.document import DocumentModel
+from app.config.settings import MAIN_API
 from app.services.llm_service import LlmService
 
 class ActParser():
@@ -87,7 +89,8 @@ class ActParser():
                 name = re.sub(r'[<>:"/\\|?*]', '', name)
                 type = doc["type"]
 
-                file_path = os.path.join(type, f"{name}.docx")
+                file_path = str(Path(__file__).parent.absolute().joinpath(f"{name}.docx"))
+
                 os.makedirs(type, exist_ok=True)
 
                 link = f"https://pravo-search.minjust.ru/bigs/showDocumentWithTemplate.action?id={id}&shard=Текущие%20редакции&templateName=printText.flt"
@@ -124,12 +127,30 @@ class ActParser():
                     doc.save(file_path)
         
             self.llm_service.save_docs_to_vector_db(documents_info)
-            # self._send_new_documents_to_api(documents_info)
+            self._send_new_documents_to_api(documents_info)
         except Exception as ex:
             print(ex)
 
         # TODO: Отправить наименования в шарпы. Проставить статус готово на стороне шарпов
         
     def _send_new_documents_to_api(self, documents: list[DocumentModel]):
-        requests.post("/api/v1/new_docs", data=json.dumps(documents))
+        dict = []
         
+        for doc in documents:
+            dict.append({
+            "id": doc.id,
+            "name": doc.name,
+            "type": doc.type,
+            "filePath": doc.file_path,
+            })
+        
+        url = MAIN_API + "/api/v1/Npa/store-from-worker"    
+        json_data = json.dumps(dict)
+        print(json_data)
+        try:
+            headers = {
+    "Content-Type": "application/json",}
+            response = requests.post(url, data=json.dumps(dict), headers=headers)
+            print(response.json())
+        except Exception as e:
+            print(e)

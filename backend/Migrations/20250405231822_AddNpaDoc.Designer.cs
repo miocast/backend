@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.DAL;
@@ -11,9 +12,11 @@ using backend.DAL;
 namespace backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250405231822_AddNpaDoc")]
+    partial class AddNpaDoc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,57 +180,6 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NpaDocuments", "hackathon");
-                });
-
-            modelBuilder.Entity("backend.Models.DocumentAnalys", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DocumentId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Explanation")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Regulation")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DocumentAnalys", "hackathon");
-                });
-
-            modelBuilder.Entity("backend.Models.DocumentNpa", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<float>("DistancePercent")
-                        .HasColumnType("real");
-
-                    b.Property<string>("DocumentId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("NpaText")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DocumentNpas", "hackathon");
                 });
 
             modelBuilder.Entity("backend.Models.TechnicalSpec", b =>

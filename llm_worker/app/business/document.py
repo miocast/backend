@@ -5,4 +5,13 @@ class DocumentModel(BaseSchema):
     name: str
     type: str
     file_path: str
-    text:str    
+    text:str
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            "file_path": self.file_path,
+            "text": self.text
+        }

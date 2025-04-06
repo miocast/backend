@@ -1,4 +1,6 @@
+from itertools import count
 from json import load
+import json
 import os
 import chromadb
 from chromadb.utils import embedding_functions
@@ -7,10 +9,12 @@ from docx import Document
 from odf import text, teletype
 from odf.opendocument import load
 from fastapi import  UploadFile
+import requests
 
 from app.business.document import DocumentModel
 from app.business.llm_relevants import LlmRelevants
 from app.business.npa import Npa
+from app.config.settings import LLM_TOKEN, MAIN_API
 from app.services.mistral_communicator import MistralCommunicator
 from app.services.llm_communicator_base import LlmCommunicatorBase
 
@@ -23,8 +27,7 @@ class LlmService:
             name="npa_collection", 
             embedding_function=self.embed_fn
         )
-        # TODO: TO config
-        self.llm_communicator: LlmCommunicatorBase = MistralCommunicator(api_key="02hNX3JbMDtRWEQiEoES2XAPFxpIUTxX")
+        self.llm_communicator: LlmCommunicatorBase = MistralCommunicator(api_key=LLM_TOKEN)
 
     def save_docs_to_vector_db(self, documents: list[DocumentModel]):
         metadatas = []
@@ -38,17 +41,12 @@ class LlmService:
             
         self.collection = self.collection.add(documents=documents_to_vector, metadatas=metadatas, ids=ids)
         
-    async def check_tz(self, document: UploadFile, user_id: int):
+    async def check_tz(self, bytes, file_name, document_id: int):
         # TODO: Отправить запрос в векторную бд
         # 2. Отправить дикпику
         
-        content = await document.read()
-
-        
-        # Декодируем с правильной кодировкой
-        # content_text = content.decode(encoding if encoding else "utf-8", errors="ignore")
-        print(os.path.splitext(document.filename))
-        content_text = self._read_file(content, os.path.splitext(document.filename)[1])
+        print(os.path.splitext(file_name))
+        content_text = self._read_file(bytes, os.path.splitext(file_name)[1])
         
         relevants = self._find_relevants(content_text)
         
@@ -60,10 +58,14 @@ class LlmService:
         dik_pik_res = self.llm_communicator.ask(content_text, relevants)
         
         # TODO: Не ретурн а отправлять на C# роут. Пока ручки нет у нас
-        return LlmRelevants(analys=dik_pik_res, npa=relevants)
+        self._send_analys_to_web(LlmRelevants(analys=dik_pik_res, npa=relevants, documentId=document_id))
     
     def _find_relevants(self, text: str, top_counter: int = 5) -> Npa | None:
         filtered = self.collection.query(query_texts=[text], n_results=top_counter, include=["documents", "metadatas", "distances"])
+        filtered = self._filter_chroma_results(filtered)
+        print(filtered["distances"])
+        if filtered["distances"] == [[]]:
+            return None
         
         return Npa(npas=filtered["documents"][0], sources=[m["source"] for m in filtered["metadatas"][0]], distances=filtered["distances"][0])
     
@@ -87,14 +89,47 @@ class LlmService:
             text_content.append(teletype.extractText(paragraph))
         return "\n".join(text_content)
     
-    # def _filter_chroma_results(self, results, max_distance=0.85):
-    #     return {
-    #         "documents": [[doc for i, doc in enumerate(results["documents"][0]) 
-    #                     if results["distances"][0][i] <= max_distance]],
-    #         "metadatas": [[meta for i, meta in enumerate(results["metadatas"][0]) 
-    #                     if results["distances"][0][i] <= max_distance]],
-    #         "distances": [[dist for dist in results["distances"][0] 
-    #                     if dist <= max_distance]],
-    #         "ids": [[id_ for i, id_ in enumerate(results["ids"][0]) 
-    #                 if results["distances"][0][i] <= max_distance]]
-    #     }
+    def _filter_chroma_results(self, results, max_distance=0.85):
+        return {
+            "documents": [[doc for i, doc in enumerate(results["documents"][0]) 
+                        if results["distances"][0][i] <= max_distance]],
+            "metadatas": [[meta for i, meta in enumerate(results["metadatas"][0]) 
+                        if results["distances"][0][i] <= max_distance]],
+            "distances": [[dist for dist in results["distances"][0] 
+                        if dist <= max_distance]],
+            "ids": [[id_ for i, id_ in enumerate(results["ids"][0]) 
+                    if results["distances"][0][i] <= max_distance]]
+        }
+        
+    def _send_analys_to_web(self, analys: LlmRelevants):
+        dict = {}
+        
+        analys_list = []
+        
+        for i in analys.analys:
+            item = {
+                "id": i["id"],
+                "text": i["text"],
+                "explanation": i["explanation"],
+                "regulation": i["regulation"]
+            }
+            analys_list.append(item)
+            
+        dict = {
+            "analyses": analys_list,
+            "npa": {
+                "npas": analys.npa.npas,
+                "sources": analys.npa.sources,
+                "distances": analys.npa.distances
+            },
+            "documentId": analys.documentId
+        }
+        
+        url = MAIN_API + "/api/v1/TechnicalSpecification/process-from-worker"    
+        try:
+            headers = {
+    "Content-Type": "application/json"}
+            response = requests.post(url, data=json.dumps(dict), headers=headers)
+            print(response.json())
+        except Exception as e:
+            print(e)
