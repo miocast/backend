@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using backend.Contracts;
 using backend.DAL;
 using backend.Models;

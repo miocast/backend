@@ -130,6 +130,5 @@ class LlmService:
             headers = {
     "Content-Type": "application/json"}
             response = requests.post(url, data=json.dumps(dict), headers=headers)
-            print(response.json())
         except Exception as e:
             print(e)
