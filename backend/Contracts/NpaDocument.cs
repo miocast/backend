@@ -1,4 +1,6 @@
-﻿namespace backend.Contracts
+﻿using Microsoft.Extensions.Primitives;
+
+namespace backend.Contracts
 {
     public class NpaDocument
     {

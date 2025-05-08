@@ -4,6 +4,8 @@ using backend.Contracts;
 using backend.DAL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using backend.Models;
+using System.IO;
 
 namespace backend.Controllers
 {
@@ -14,10 +16,12 @@ namespace backend.Controllers
     public class NpaController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
+        private string ApiUrl { get; init; }
 
-        public NpaController(ApplicationDbContext dbContext)
+        public NpaController(ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            this.ApiUrl = configuration["AppSettings:ApiUrl"] ?? string.Empty;
         }
 
         [HttpPost("store-from-worker")]
@@ -55,6 +59,60 @@ namespace backend.Controllers
             }
         }
 
+        [HttpGet("/api/v1/documents/npa")]
+        [ProducesResponseType(200, Type = typeof(List<NpaKnowlabe>))]
+        public async Task<IActionResult> GetNpasAsync()
+        {
+            try
+            {
+                var npasModels = await _dbContext.NpaDocuments.ToListAsync();
+
+                if (npasModels is null || npasModels.Count == 0)
+                {
+                    return new OkObjectResult(new List<NpaKnowlabe>());
+                }
+
+                var npas = npasModels.Select(np => new NpaKnowlabe
+                {
+                    Id = np.Id,
+                    FilePath = np.FilePath,
+                    LastUpdated = DateTime.UtcNow,
+                    Title = np.Name
+                }).ToList();
+
+                return new OkObjectResult(npas);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return BadRequest();
+            }
+        }
+
+        public class ParseQuery
+        {
+            public string Query { get; set; }
+        }
+
+        [HttpPost("/api/v1/documents/parse-by-theme")]
+        public async Task<IActionResult> AddNewTheme([FromBody] ParseQuery query)
+        {
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    // TODO: �� ����� ����� api ������ ������. ����� ������� ��� ����� ��� ����������
+                    HttpResponseMessage response = await client.PostAsync($"{this.ApiUrl}/api/v1/documets/parse-by-theme?theme={query.Query}", content);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+
+            return new OkResult();
+        }
 
     }
 }

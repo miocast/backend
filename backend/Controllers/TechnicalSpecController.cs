@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Net.Http.Headers;
 using System.Text;
 using backend.Contracts;
 using backend.DAL;
 using backend.Models;
+using DocumentFormat.OpenXml.Packaging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,12 +50,15 @@ namespace backend.Controllers
                 using (var stream = new FileStream(path, FileMode.Create))
                 {
                     await fileStream.CopyToAsync(stream, cts);
-
-                    using (var reader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        text = reader.ReadToEnd();
-                    }
+                using (WordprocessingDocument doc = WordprocessingDocument.Open(stream, false))
+                {
+                    MainDocumentPart mainPart = doc.MainDocumentPart;
+                    text = mainPart.Document.Body.InnerText;
+                    Console.WriteLine(text);
+                    // Используйте content
                 }
+                }
+
 
                 var technicalSpec = new TechnicalSpec(userId, fileStream.FileName, path);
                 technicalSpec.Text = text;

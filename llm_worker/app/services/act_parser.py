@@ -89,18 +89,21 @@ class ActParser():
                 name = re.sub(r'[<>:"/\\|?*]', '', name)
                 type = doc["type"]
 
-                folder = Path(__file__).parent.absolute()
-                file_path = str(Path(__file__).parent.absolute().joinpath(f"{type}/{name}.docx"))
-
-                os.makedirs(file_path, exist_ok=True)
+                dir = os.path.join(type)
+                try:
+                    original_umask = os.umask(0)
+                    os.makedirs(dir, exist_ok=True)
+                finally:
+                    os.umask(original_umask)
 
                 link = f"https://pravo-search.minjust.ru/bigs/showDocumentWithTemplate.action?id={id}&shard=Текущие%20редакции&templateName=printText.flt"
                 doc_html = requests.get(link, verify=False)
                 doc_text = doc_html.text
                 
                 soup = BeautifulSoup(doc_text, "html.parser")
+                
+                file_path = f"{dir}/{name}.docx"
 
-                # documents_info.append({"id": id, "name": name, "type": type, "file_path": file_path, "doc_text": soup.text})
                 documents_info.append(DocumentModel(id=id, name=name, type=type, file_path=file_path, text=re.sub(r'(^\s+|\n\s*\n)', '\n', soup.get_text(), flags=re.MULTILINE)))
                 
                 doc = Document()
@@ -122,7 +125,6 @@ class ActParser():
                     else:
                             # Обычный текст
                         doc.add_paragraph(element.get_text())
-
                     
                     # Сохраняем документ
                     doc.save(file_path)
@@ -143,15 +145,14 @@ class ActParser():
             "name": doc.name,
             "type": doc.type,
             "filePath": doc.file_path,
+            "text": doc.text
             })
         
         url = MAIN_API + "/api/v1/Npa/store-from-worker"    
         json_data = json.dumps(dict)
-        print(json_data)
         try:
             headers = {
     "Content-Type": "application/json",}
             response = requests.post(url, data=json.dumps(dict), headers=headers)
-            print(response.json())
         except Exception as e:
             print(e)

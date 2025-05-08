@@ -29,6 +29,16 @@ builder.Services.AddIdentityCore<User>()
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 
 var app = builder.Build();
 
@@ -38,11 +48,9 @@ await dbContext.Database.EnsureCreatedAsync();
 
 
 
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+app.UseCors(builder => builder.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
 app.MapGet("api/v1/users/me", async (ClaimsPrincipal claims, ApplicationDbContext context) =>
 {
@@ -50,6 +58,7 @@ app.MapGet("api/v1/users/me", async (ClaimsPrincipal claims, ApplicationDbContex
     return await context.Users.FindAsync(userId);
 })
     .RequireAuthorization();
+
 
 app.UseHttpsRedirection();
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Primitives;
 
 namespace backend.Models
 {
@@ -9,5 +10,13 @@ namespace backend.Models
         public string Name { get; set; }
         public string Type { get; set; }
         public string FilePath { get; set; }
+    }
+
+    public class NpaKnowlabe
+    {
+        public string Id { get; set; }
+        public string  Title { get; set; }
+        public string FilePath { get; set; }
+        public DateTime LastUpdated { get; set; }
     }
 }

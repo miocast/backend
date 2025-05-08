@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXmlSDK" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.14">
@@ -23,6 +24,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.7.0" />
+    <PackageReference Include="System.IO.Packaging" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>

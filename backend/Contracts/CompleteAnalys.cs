@@ -5,7 +5,6 @@
         public List<Analys> Analyses { get; set; }
         public NpaFromWorker Npa { get; set; }
         public string DocumentId { get; set; }
-
     }
 
     public class Analys

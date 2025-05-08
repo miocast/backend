@@ -42,22 +42,15 @@ class LlmService:
         self.collection = self.collection.add(documents=documents_to_vector, metadatas=metadatas, ids=ids)
         
     async def check_tz(self, bytes, file_name, document_id: int):
-        # TODO: Отправить запрос в векторную бд
-        # 2. Отправить дикпику
-        
-        print(os.path.splitext(file_name))
         content_text = self._read_file(bytes, os.path.splitext(file_name)[1])
         
         relevants = self._find_relevants(content_text)
         
         if relevants == None:
-            # TODO: Тут парсинг по ключевым словам с дикпика
-            print('none')
             return relevants 
         
         dik_pik_res = self.llm_communicator.ask(content_text, relevants)
         
-        # TODO: Не ретурн а отправлять на C# роут. Пока ручки нет у нас
         self._send_analys_to_web(LlmRelevants(analys=dik_pik_res, npa=relevants, documentId=document_id))
     
     def _find_relevants(self, text: str, top_counter: int = 5) -> Npa | None:
@@ -72,7 +65,7 @@ class LlmService:
     def _read_file(self, file_contents: bytes, file_ext: str) -> str:
         if file_ext == ".odt":
             return self._read_odt(file_contents)
-        elif file_ext == ".doc":
+        elif file_ext == ".doc" or file_ext == ".docx":
             return self._read_docx(file_contents)
         
         return ""
